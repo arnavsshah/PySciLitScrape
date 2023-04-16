@@ -1,0 +1,8 @@
+- Create local MongoDB
+- use TextSoup to scrape sections and text from latex source
+    - first download as a tar.gz file
+    - extract
+    - search for main.tex (if not there, ignore this paper, try a new one)
+    - look at all sections and corresponding .tex files
+    - scrape any relevant text and store in the original dictionary
+    

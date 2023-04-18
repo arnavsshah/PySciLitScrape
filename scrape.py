@@ -6,6 +6,8 @@ from bs4 import BeautifulSoup
 from pprint import pprint
 from pymongo import MongoClient
 from datetime import datetime
+from os import remove
+import tarfile
 
 def get_arxiv_id(html: BeautifulSoup) -> str:
     author_div = html.select('span.arxivid')[0]
@@ -66,6 +68,29 @@ def put_paper_in_database(paper_id: str) -> pymongo.results.InsertOneResult:
     paper = get_info(html)
     insert_result = db['papers'].insert_one(paper)
     return insert_result
+
+def download_source(paper_id: str):
+    """
+    Saves the source files of the arxiv paper with the given id.
+
+    :param paper_id: An Arxiv paper idea. e.g. 1009.3896
+    """
+
+    # Download source
+    source_url = f'https://arxiv.org/e-print/{paper_id}'
+    r = requests.get(source_url)
+    file_name = f'data/{paper_id}.tar.gz'
+    f = open(file_name, 'wb')
+    f.write(r.content)
+    f.close()
+
+    # Extract file
+    tar = tarfile.open(file_name, "r:gz")
+    tar.extractall(f'data/{paper_id}')
+    tar.close()
+
+    # Remove compressed file
+    remove(file_name)
 
 
 if __name__ == '__main__':

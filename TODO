@@ -1,8 +1,17 @@
+PROJECT NOTES
 - Code is in the 'scrape' branch. Push to that branch only
-- Create local MongoDB
+
+
+TODO
+- Create local MongoDB (1)
 - use TextSoup to scrape sections and text from latex source
     - first download as a tar.gz file
     - extract
     - search for main.tex (if not there, ignore this paper, try a new one)
     - look at all sections and corresponding .tex files
     - scrape any relevant text and store in the original dictionary
+- Store the creation date of a paper as a Date object.
+- Add queue which adds papers from authors list.
+
+
+(1) Done on Austin's local machine.

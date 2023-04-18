@@ -10,7 +10,6 @@ TODO
     - search for main.tex (if not there, ignore this paper, try a new one)
     - look at all sections and corresponding .tex files
     - scrape any relevant text and store in the original dictionary
-- Store the creation date of a paper as a Date object.
 - Add queue which adds papers from authors list.
 
 

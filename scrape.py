@@ -5,6 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 from pprint import pprint
 from pymongo import MongoClient
+from datetime import datetime
 
 def get_arxiv_id(html: BeautifulSoup) -> str:
     author_div = html.select('span.arxivid')[0]
@@ -34,9 +35,9 @@ def get_abstract(html: BeautifulSoup) -> str:
     return abstract
 
 
-def get_date(html: BeautifulSoup) -> str:
-    date = html.select('div.submission-history')[0].text.split('[v1]')[1].split('(')[0].strip()
-    return date
+def get_date(html: BeautifulSoup) -> datetime:
+    timestamp = html.select('div.submission-history')[0].text.split('[v1]')[1].split('(')[0].strip()
+    return datetime.strptime(timestamp, '%a, %d %b %Y %H:%M:%S %Z')
 
 
 def get_info(html):

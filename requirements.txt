@@ -2,3 +2,4 @@ idna
 TexSoup
 bs4
 requests
+pymongo

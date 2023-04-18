@@ -1,7 +1,10 @@
 from typing import List
+
+import pymongo.results
 import requests
 from bs4 import BeautifulSoup
 from pprint import pprint
+from pymongo import MongoClient
 
 def get_arxiv_id(html: BeautifulSoup) -> str:
     author_div = html.select('span.arxivid')[0]
@@ -48,14 +51,37 @@ def get_info(html):
     return data
 
 
-if __name__ == '__main__':
+def put_paper_in_database(paper_id: str) -> pymongo.results.InsertOneResult:
+    """
+    Adds to the collection papers the paper info of the arxiv paper with id paper_id.
 
-    url = 'https://arxiv.org/abs/1810.04805'
+    :param paper_id: An Arxiv paper idea. e.g. 1009.3896
+    :return: A MongoDB InsertOneResult object.
+    """
+
+    url = f'https://arxiv.org/abs/{paper_id}'
     data = requests.get(url)
-
     html = BeautifulSoup(data.text, 'html.parser')
+    paper = get_info(html)
+    insert_result = db['papers'].insert_one(paper)
+    return insert_result
 
-    print(get_info(html))
+
+if __name__ == '__main__':
+    paper_id = '1009.3896'
+
+    client = MongoClient()
+    db = client['litdb']
+
+    paper = db['papers'].find_one({'id': paper_id})
+
+    if not paper:
+        put_paper_in_database(paper_id)
+        paper = db['papers'].find_one({'id': paper_id})
+        assert(db['papers'].count_documents({'id': paper_id}) == 1)
+
+    print(paper)
+
 
 
 

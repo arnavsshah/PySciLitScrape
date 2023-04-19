@@ -1,5 +1,7 @@
 idna
 TexSoup
+tex2py
 bs4
 requests
 pymongo
+termcolor

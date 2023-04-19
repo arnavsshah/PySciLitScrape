@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 import pymongo.results
 import requests
@@ -8,6 +8,9 @@ from pymongo import MongoClient
 from datetime import datetime
 from os import remove
 import tarfile
+from tex2py import tex2py
+from termcolor import cprint
+from os import listdir
 
 def get_arxiv_id(html: BeautifulSoup) -> str:
     author_div = html.select('span.arxivid')[0]
@@ -66,6 +69,11 @@ def put_paper_in_database(paper_id: str) -> pymongo.results.InsertOneResult:
     data = requests.get(url)
     html = BeautifulSoup(data.text, 'html.parser')
     paper = get_info(html)
+
+    download_source(paper_id)
+    sections = get_sections_from_paper(paper_id)
+    paper['sections'] = sections
+
     insert_result = db['papers'].insert_one(paper)
     return insert_result
 
@@ -93,12 +101,49 @@ def download_source(paper_id: str):
     remove(file_name)
 
 
+def get_sections_from_paper(paper_id: str) -> Dict[str, str]:
+    """
+    Given a paper_id return a dict of section name to section content.
+
+    Note:
+        1. The paper source must already be downloaded.
+        2. Section names are assumed to be unique. If they aren't unique only one will be kept.
+
+    :param paper_id: An Arxiv paper idea. e.g. 1009.3896
+    :return: a dict from name to content.
+    """
+
+    tex_file_names = [name for name in listdir(f'data/{paper_id}') if name[-4:] == '.tex']
+
+    sections = dict()
+    for file_name in tex_file_names:
+        file_path = f'data/{paper_id}/{file_name}'
+        with open(file_path) as f:
+            tex = f.readlines()
+            toc = tex2py(tex)
+
+            if not list(toc.source.text):
+                cprint(f'the tex file {file_name} failed to parse\n', 'red')
+                continue
+
+            source = toc.source
+            if source.find('section') == None:
+                cprint(f'the tex file {file_name} contains no sections', 'yellow')
+                continue
+
+            for section in toc.sections:
+                # If a paper has several sections with the same name then this can cause problems.
+                as_strs = [str(token) for token in section.descendants]
+                sections[section.name] = ''.join(as_strs)
+            print()
+
+    return sections
+
 if __name__ == '__main__':
     paper_id = '1009.3896'
 
     client = MongoClient()
     db = client['litdb']
-
     paper = db['papers'].find_one({'id': paper_id})
 
     if not paper:

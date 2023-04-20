@@ -11,6 +11,7 @@ import tarfile
 from tex2py import tex2py
 from termcolor import cprint
 from os import listdir
+from ratelimiter import RateLimiter
 
 def get_arxiv_id(html: BeautifulSoup) -> str:
     author_div = html.select('span.arxivid')[0]
@@ -77,6 +78,33 @@ def put_paper_in_database(paper_id: str) -> pymongo.results.InsertOneResult:
     insert_result = db['papers'].insert_one(paper)
     return insert_result
 
+
+def get_author_papers(author_page: str) -> List[str]:
+    """
+    Retrieves all paper ids on Arxiv from a given author.
+    """
+
+    start_paper = 0
+
+    paper_ids = []
+
+    rate_limiter = RateLimiter(max_calls=1, period=1)
+    while True:
+        with rate_limiter:
+            data = requests.get(author_page + f'&size=200&start={start_paper}')
+
+            html = BeautifulSoup(data.text, 'html.parser')
+
+            paper_ids_on_page = [p.text.split('\n')[0][6:] for p in html.select('p.list-title')]
+
+            if len(paper_ids_on_page) == 0:
+                break
+
+            paper_ids += [p.text.split('\n')[0][6:] for p in html.select('p.list-title')]
+            start_paper += 200
+
+    return paper_ids
+
 def download_source(paper_id: str):
     """
     Saves the source files of the arxiv paper with the given id.
@@ -140,6 +168,7 @@ def get_sections_from_paper(paper_id: str) -> Dict[str, str]:
     return sections
 
 if __name__ == '__main__':
+    get_author_papers('https://arxiv.org/search/stat?searchtype=author&query=Jordan%2C+M+I')
     paper_id = '1009.3896'
 
     client = MongoClient()

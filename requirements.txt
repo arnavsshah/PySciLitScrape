@@ -5,3 +5,4 @@ bs4
 requests
 pymongo
 termcolor
+ratelimiter

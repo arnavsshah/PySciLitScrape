@@ -67,7 +67,10 @@ def put_paper_in_database(paper_id: str) -> pymongo.results.InsertOneResult:
     """
 
     url = f'https://arxiv.org/abs/{paper_id}'
-    data = requests.get(url)
+
+    with rate_limiter:
+        data = requests.get(url)
+
     html = BeautifulSoup(data.text, 'html.parser')
     paper = get_info(html)
 
@@ -88,7 +91,6 @@ def get_author_papers(author_page: str) -> List[str]:
 
     paper_ids = []
 
-    rate_limiter = RateLimiter(max_calls=1, period=1)
     while True:
         with rate_limiter:
             data = requests.get(author_page + f'&size=200&start={start_paper}')
@@ -114,7 +116,10 @@ def download_source(paper_id: str):
 
     # Download source
     source_url = f'https://arxiv.org/e-print/{paper_id}'
-    r = requests.get(source_url)
+
+    with rate_limiter:
+        r = requests.get(source_url)
+
     file_name = f'data/{paper_id}.tar.gz'
     f = open(file_name, 'wb')
     f.write(r.content)
@@ -148,7 +153,11 @@ def get_sections_from_paper(paper_id: str) -> Dict[str, str]:
         file_path = f'data/{paper_id}/{file_name}'
         with open(file_path) as f:
             tex = f.readlines()
-            toc = tex2py(tex)
+            try:
+                toc = tex2py(tex)
+            except EOFError:
+                print(f'Parsing: {file_name} contained in {paper_id} failed due to: EOFError')
+                continue
 
             if not list(toc.source.text):
                 cprint(f'the tex file {file_name} failed to parse\n', 'red')
@@ -168,19 +177,20 @@ def get_sections_from_paper(paper_id: str) -> Dict[str, str]:
     return sections
 
 if __name__ == '__main__':
-    get_author_papers('https://arxiv.org/search/stat?searchtype=author&query=Jordan%2C+M+I')
-    paper_id = '1009.3896'
-
+    rate_limiter = RateLimiter(max_calls=1, period=1)
     client = MongoClient()
     db = client['litdb']
-    paper = db['papers'].find_one({'id': paper_id})
 
-    if not paper:
-        put_paper_in_database(paper_id)
+    papers = get_author_papers('https://arxiv.org/search/stat?searchtype=author&query=Jordan%2C+M+I')
+    for paper_id in papers:
         paper = db['papers'].find_one({'id': paper_id})
-        assert(db['papers'].count_documents({'id': paper_id}) == 1)
 
-    print(paper)
+        if not paper:
+            put_paper_in_database(paper_id)
+            paper = db['papers'].find_one({'id': paper_id})
+            assert(db['papers'].count_documents({'id': paper_id}) == 1)
+
+        print(paper['title'])
 
 
 

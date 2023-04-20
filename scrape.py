@@ -31,7 +31,7 @@ def get_authors(html: BeautifulSoup) -> List[str]:
 
     children = author_div.findChildren("a" , recursive=False)
     for child in children:
-        authors.append(child.text.strip())
+        authors.append({'name': child.text.strip(), 'author_page': child.attrs['href']})
 
     return authors
 

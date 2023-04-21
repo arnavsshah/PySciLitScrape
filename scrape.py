@@ -156,6 +156,7 @@ def get_sections_from_paper(paper_id: str) -> Dict[str, str]:
             try:
                 toc = tex2py(tex)
             except EOFError:
+                # todo: keep track of failures within database.
                 print(f'Parsing: {file_name} contained in {paper_id} failed due to: EOFError')
                 continue
 

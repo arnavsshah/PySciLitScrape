@@ -6,3 +6,4 @@ requests
 pymongo
 termcolor
 ratelimiter
+bibtexparser

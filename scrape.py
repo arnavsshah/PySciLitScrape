@@ -12,6 +12,8 @@ from tex2py import tex2py
 from termcolor import cprint
 from os import listdir
 from ratelimiter import RateLimiter
+import bibtexparser
+import re
 
 def get_arxiv_id(html: BeautifulSoup) -> str:
     author_div = html.select('span.arxivid')[0]
@@ -132,6 +134,39 @@ def download_source(paper_id: str):
 
     # Remove compressed file
     remove(file_name)
+
+
+def get_refs(paper_id: str) -> Dict[str, str]:
+    """
+    Extracts the references from a paper's .bib files an arxiv paper id.
+
+    Note: We assume that paper data are located in the 'data/{paper_id}' directory.
+    """
+
+    bib_file_names = [name for name in listdir(f'data/{paper_id}') if name[-4:] == '.bib']
+
+    bib_entries = []
+    for bib_file in bib_file_names:
+        file_path = f'data/{paper_id}/{bib_file}'
+        with open(file_path) as f:
+            bib_entries += bibtexparser.load(f).entries
+
+    tex_file_names = [name for name in listdir(f'data/{paper_id}') if name[-4:] == '.tex']
+    citations = []
+    for file_name in tex_file_names:
+        file_path = f'data/{paper_id}/{file_name}'
+        with open(file_path) as f:
+            tex = f.read()
+            re_cite = re.compile(r'\\cite.*\{(.*)\}')
+            citations += re.findall(re_cite, tex)
+
+    real_citations = []
+    for (bib_item, entry) in zip({c['ID'] for c in bib_entries}, bib_entries):
+        for citation in citations:
+            if bib_item in citation:
+                real_citations.append(entry)
+                break
+    return real_citations
 
 
 def get_sections_from_paper(paper_id: str) -> Dict[str, str]:

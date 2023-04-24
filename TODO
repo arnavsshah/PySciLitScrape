@@ -2,17 +2,14 @@ PROJECT NOTES
 - Code is in the 'scrape' branch. Push to that branch only
 
 TODO
-- Create local MongoDB (~DONE) (1)
-- Add queue which adds papers from authors list.
 - There likely will be papers which we are unable to work with. It'd be wise to keep a list of such files.
-- Delete temp files which have been downloaded.
+- Dates
 
 IDEAS
-- Add references to database
 - Maybe the following tool would be better for citations. https://pythonhosted.org/refextract/
 
 EXTENSIONS
-Consider supporting papers which don't have .bib files.
+- Consider supporting papers which don't have .bib files.
 
 
 (1) Done on Austin's local machine.

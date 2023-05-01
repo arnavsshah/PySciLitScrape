@@ -45,8 +45,11 @@ def get_all_papers_info(author_page: str) -> List[Dict]:
         with rate_limiter:
             
             data = requests.get(author_page + f'&size=200&start={start_paper}')
+            if data.status_code != 200:
+                print(f"Status code for {author_page + f'&size=200&start={start_paper}'}: {data.status_code}")
 
             html = BeautifulSoup(data.text, 'html.parser')
+
 
             paper_ids_on_page = [p.text.split(
                 '\n')[0][6:] for p in html.select('p.list-title')]
@@ -104,6 +107,8 @@ def download_source(paper_id: str):
 
     with rate_limiter:
         r = requests.get(source_url)
+        if r.status_code != 200:
+            print(f"Status code for {source_url}: {r.status_code}")
 
     file_name = f'data/{paper_id}.tar.gz'
     f = open(file_name, 'wb')
@@ -285,6 +290,8 @@ def get_num_papers_of_collaborator(collaborators: List[str]) -> Dict[str, int]:
         with rate_limiter:
             author_url = author_base_url + '%20'.join(collaborator.split(' '))  # replace spaces with %20 for url
             data = requests.get(author_url)
+            if data.status_code != 200:
+                print(f"Status code for {author_url}: {data.status_code}")
 
             html = BeautifulSoup(data.text, 'html.parser')
 

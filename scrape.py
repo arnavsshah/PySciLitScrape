@@ -1,5 +1,6 @@
 from typing import List, Dict, Tuple, Set
 
+
 import os
 import shutil
 import requests
@@ -8,7 +9,8 @@ from pathlib import Path
 from pprint import pprint
 from datetime import datetime
 from termcolor import cprint
-from queue import PriorityQueue
+from heapq import heappush, heappop
+import pickle
 
 import pymongo.results
 from pymongo import MongoClient, InsertOne
@@ -21,6 +23,29 @@ from tex2py import tex2py
 from ratelimiter import RateLimiter
 import bibtexparser
 
+
+def save_checkpoint(queue_filename, visited_filename, author_queue, visited_authors):
+    with open(queue_filename, 'wb') as queue_file:
+        pickle.dump(author_queue, queue_file)
+
+    with open(visited_filename, 'wb') as visited_file:
+        pickle.dump(visited_authors, visited_file)
+
+
+def load_checkpoint(queue_filename, visited_filename):
+    try:
+        with open(queue_filename, 'rb') as queue_file:
+            author_queue = pickle.load(queue_file)
+    except FileNotFoundError:
+        author_queue = []
+
+    try:
+        with open(visited_filename, 'rb') as visited_file:
+            visited_authors = pickle.load(visited_file)
+    except FileNotFoundError:
+        visited_authors = set()
+
+    return author_queue, visited_authors
 
 
 def get_all_papers_info(author_page: str) -> List[Dict]:
@@ -308,7 +333,7 @@ def get_num_papers_of_collaborator(collaborators: List[str]) -> Dict[str, int]:
     return collaborator_reputation
 
 
-def scrape(author_queue: PriorityQueue, visited_authors: Set[str]) -> None:
+def scrape(author_queue: list, visited_authors: Set[str]) -> None:
     """
     Core scraping function
         1. Gets all papers and corresponding collaborators from the given author_url
@@ -319,7 +344,7 @@ def scrape(author_queue: PriorityQueue, visited_authors: Set[str]) -> None:
     :param visited_authors: Set of author names that have already been scraped
     """
 
-    author_name = author_queue.get()[1]
+    author_name = heappop(author_queue)[1]
 
     # replace spaces with %20 for url
     author_url = 'https://arxiv.org/search/stat?searchtype=author&abstracts=show&query=' + '%20'.join(author_name.split(' '))
@@ -340,12 +365,13 @@ def scrape(author_queue: PriorityQueue, visited_authors: Set[str]) -> None:
     for collaborator_name, reputation in collaborator_reputation.items():
         if collaborator_name not in visited_authors:
             # reputation is negated to get the author with the most citations using a min-heap-based priority queue
-            author_queue.put((-reputation, collaborator_name))
 
+            heappush(author_queue,  (-reputation, collaborator_name))
 
+    visited_authors.add(author_name)
+    save_checkpoint(queue_filename, visited_filename, author_queue, visited_authors)
 
 if __name__ == '__main__':
-
     MAX_AUTHORS_TO_SCRAPE = 5
 
     data_path = 'data'
@@ -370,15 +396,18 @@ if __name__ == '__main__':
 
     papers_collection.create_index('id', unique=True, background=True)
 
-    author_queue = PriorityQueue()
-    visited_authors = set()
+    queue_filename = 'author_queue.pickle'
+    visited_filename = 'visited_authors.pickle'
+    author_queue, visited_authors = load_checkpoint(queue_filename, visited_filename)
 
-    # seed_author_name = 'Michael I. Jordan'
-    seed_author_name = 'Mikołaj Kasprzak'
+    if not len(author_queue):
+        # seed_author_name = 'Michael I. Jordan'
+        seed_author_name = 'Mikołaj Kasprzak'
 
-    author_queue.put((0, seed_author_name))
-    visited_authors.add(seed_author_name)
+        heappush(author_queue, (0, seed_author_name))
+        visited_authors.add(seed_author_name)
+        save_checkpoint(queue_filename, visited_filename, author_queue, visited_authors)
 
-    while not author_queue.empty() and MAX_AUTHORS_TO_SCRAPE > 0:
+    while len(author_queue) and MAX_AUTHORS_TO_SCRAPE > 0:
         scrape(author_queue, visited_authors)
         MAX_AUTHORS_TO_SCRAPE -= 1

@@ -90,7 +90,8 @@ def get_all_papers_info(author_page: str) -> List[Dict]:
 
             # Get dates:
             paper_dates_on_page = html.select('.is-size-7')
-            paper_dates_on_page = list(filter(lambda x: 'Submitted' in x.text, paper_dates_on_page))
+            date_re = r'Submitted (?:0[1-9]|[12][0-9]|3[01])\s(?:January|February|March|April|May|June|July|August|September|October|November|December),\s(?:[12]\d{3})'
+            paper_dates_on_page = [s for s in paper_dates_on_page if re.match(date_re, s.text)]
             paper_dates_on_page = [p.text[10:].split(';')[0] for p in paper_dates_on_page]
             paper_dates_on_page = [datetime.strptime(p, "%d %B, %Y") for p in paper_dates_on_page]
 

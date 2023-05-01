@@ -60,8 +60,11 @@ def get_all_papers_info(author_page: str) -> List[Dict]:
 
             paper_authors_on_page = list([[a.contents[0].strip() for a in p.findChildren('a', recursive=False)] for p in html.select('p.authors')])
 
-            # paper_dates_on_page = [p.text.split(
-            #     '\n')[0][6:] for p in html.select('p.list-title')]
+            # Get dates:
+            paper_dates_on_page = html.select('.is-size-7')
+            paper_dates_on_page = list(filter(lambda x: 'Submitted' in x.text, paper_dates_on_page))
+            paper_dates_on_page = [p.text[10:].split(';')[0] for p in paper_dates_on_page]
+            paper_dates_on_page = [datetime.strptime(p, "%d %B, %Y") for p in paper_dates_on_page]
 
             paper_abstracts_on_page = [
                 p.text.strip() for p in html.select('span.abstract-full.mathjax')]
@@ -69,19 +72,19 @@ def get_all_papers_info(author_page: str) -> List[Dict]:
             paper_ids += paper_ids_on_page
             paper_titles += paper_title_on_page
             paper_authors += paper_authors_on_page
-            # paper_dates += paper_dates_on_page
+            paper_dates += paper_dates_on_page
             paper_abstracts += paper_abstracts_on_page
 
             start_paper += 200
 
 
-    for paper_id, paper_title, paper_author, paper_abstract in zip(paper_ids, paper_titles, paper_authors, paper_abstracts):
+    for paper_id, paper_title, paper_author, paper_abstract, paper_date in zip(paper_ids, paper_titles, paper_authors, paper_abstracts, paper_dates):
 
         papers.append({
             'id':  paper_id,
             'title': paper_title,
             'author': paper_author,
-            # 'date': paper_date,
+            'date': paper_date,
             'abstract': paper_abstract
 
         })
@@ -347,7 +350,7 @@ if __name__ == '__main__':
 
     Path(data_path).mkdir(parents=True, exist_ok=True)
 
-    rate_limiter = RateLimiter(max_calls=1, period=1)
+    rate_limiter = RateLimiter(max_calls=1, period=15)
     client = MongoClient()
     db = client['litdb']
 

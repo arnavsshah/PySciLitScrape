@@ -3,14 +3,9 @@ PROJECT NOTES
 
 TODO
 - There likely will be papers which we are unable to work with. It'd be wise to keep a list of such files.
-- Have checkpoints after each author (perhaps save the queue)
 
 IDEAS
 - Maybe the following tool would be better for citations. https://pythonhosted.org/refextract/
 
 EXTENSIONS
 - Consider supporting papers which don't have .bib files.
-
-
-(1) Done on Austin's local machine.
-(2) currently we just go through all the .tex files within the source.

@@ -1,6 +1,5 @@
 from typing import List, Dict, Tuple, Set
 
-
 import os
 import shutil
 import requests
@@ -48,7 +47,7 @@ def load_checkpoint(queue_filename, visited_filename):
     return author_queue, visited_authors
 
 
-def get_all_papers_info(author_page: str) -> List[Dict]:
+def get_all_papers_info(author_page: str, max_papers: int) -> List[Dict]:
     """
     Retrieves all paper metadata about a paper including the id, title, abstract, authors and date.
 
@@ -75,16 +74,13 @@ def get_all_papers_info(author_page: str) -> List[Dict]:
 
             html = BeautifulSoup(data.text, 'html.parser')
 
-
-            paper_ids_on_page = [p.text.split(
-                '\n')[0][6:] for p in html.select('p.list-title')]
+            paper_ids_on_page = [p.text.split('\n')[0][6:] for p in html.select('p.list-title')]
 
             # empty page
             if len(paper_ids_on_page) == 0:
                 break
 
-            paper_title_on_page = [p.text.strip()
-                                   for p in html.select('p.title.mathjax')]
+            paper_title_on_page = [p.text.strip() for p in html.select('p.title.mathjax')]
 
             paper_authors_on_page = list([[a.contents[0].strip() for a in p.findChildren('a', recursive=False)] for p in html.select('p.authors')])
 
@@ -95,8 +91,7 @@ def get_all_papers_info(author_page: str) -> List[Dict]:
             paper_dates_on_page = [p.text[10:].split(';')[0] for p in paper_dates_on_page]
             paper_dates_on_page = [datetime.strptime(p, "%d %B, %Y") for p in paper_dates_on_page]
 
-            paper_abstracts_on_page = [
-                p.text.strip() for p in html.select('span.abstract-full.mathjax')]
+            paper_abstracts_on_page = [p.text.strip() for p in html.select('span.abstract-full.mathjax')]
 
             paper_ids += paper_ids_on_page
             paper_titles += paper_title_on_page
@@ -105,8 +100,12 @@ def get_all_papers_info(author_page: str) -> List[Dict]:
             paper_abstracts += paper_abstracts_on_page
 
             start_paper += 200
+            
+            # get all papers from the first page (<= 200) only
+            break
 
 
+    
     for paper_id, paper_title, paper_author, paper_abstract, paper_date in zip(paper_ids, paper_titles, paper_authors, paper_abstracts, paper_dates):
 
         papers.append({
@@ -117,8 +116,8 @@ def get_all_papers_info(author_page: str) -> List[Dict]:
             'abstract': paper_abstract
 
         })
-
-    return papers
+    
+    return papers[:max_papers]
 
 
 def download_source(paper_id: str):
@@ -247,7 +246,7 @@ def get_sections_from_paper(paper_id: str) -> Dict[str, str]:
     return sections
 
 
-def get_paper_obj(paper: str) -> Dict:
+def get_paper_obj(paper: Dict) -> Dict:
     """
     Get the paper object (add sections and citations) of the given arxiv paper, to be inserted into the database.
 
@@ -258,8 +257,8 @@ def get_paper_obj(paper: str) -> Dict:
     paper_id = paper['id']
 
     download_source(paper_id)
-    sections = get_sections_from_paper(paper_id)
-    paper['sections'] = sections
+    # sections = get_sections_from_paper(paper_id)
+    # paper['sections'] = sections
     citations = get_citations(paper_id)
     paper['citations'] = citations
 
@@ -282,7 +281,7 @@ def put_papers_in_database(papers: List[Dict], papers_collection: pymongo.collec
     """
 
     to_insert = []
-    for paper in papers:
+    for i, paper in enumerate(papers):
         paper_id = paper['id']
         db_paper = papers_collection.find_one({'id': paper_id})
 
@@ -292,7 +291,7 @@ def put_papers_in_database(papers: List[Dict], papers_collection: pymongo.collec
             # paper = papers_collection.find_one({'id': paper_id})
             # assert(papers_collection.count_documents({'id': paper_id}) == 1)
 
-            cprint(paper_obj['title'], 'green')
+            cprint(f"{i}: {paper_obj['title']}", 'green')
 
     try:
         if to_insert:
@@ -301,7 +300,7 @@ def put_papers_in_database(papers: List[Dict], papers_collection: pymongo.collec
         cprint(f'Database: Bulk Write Error.', 'red')
 
 
-def get_num_papers_of_collaborator(collaborators: List[str]) -> Dict[str, int]:
+def get_num_papers_of_collaborator(collaborators: List[str], author_queue: List[str], visited_authors: Set[str]) -> Dict[str, int]:
     """
     Returns the number of papers of each author in the given list
 
@@ -313,6 +312,9 @@ def get_num_papers_of_collaborator(collaborators: List[str]) -> Dict[str, int]:
     author_base_url = 'https://arxiv.org/search/stat?searchtype=author&query='
 
     for collaborator in collaborators:
+        if collaborator in visited_authors or collaborator in author_queue:
+            continue
+
         with rate_limiter:
             author_url = author_base_url + '%20'.join(collaborator.split(' '))  # replace spaces with %20 for url
             data = requests.get(author_url)
@@ -334,7 +336,7 @@ def get_num_papers_of_collaborator(collaborators: List[str]) -> Dict[str, int]:
     return collaborator_reputation
 
 
-def scrape(author_queue: list, visited_authors: Set[str]) -> None:
+def scrape(author_queue: List[str], visited_authors: Set[str], max_papers_per_author: int) -> None:
     """
     Core scraping function
         1. Gets all papers and corresponding collaborators from the given author_url
@@ -345,7 +347,10 @@ def scrape(author_queue: list, visited_authors: Set[str]) -> None:
     :param visited_authors: Set of author names that have already been scraped
     """
 
-    author_name = heappop(author_queue)[1]
+    while len(author_queue) > 0:
+        author_name = author_queue.pop(0)
+        if author_name not in visited_authors:
+            break
 
     # replace spaces with %20 for url
     author_url = 'https://arxiv.org/search/stat?searchtype=author&abstracts=show&query=' + '%20'.join(author_name.split(' '))
@@ -353,27 +358,28 @@ def scrape(author_queue: list, visited_authors: Set[str]) -> None:
     cprint(f'\nscraping papers of {author_name}', 'blue')
 
     try:
-        papers = get_all_papers_info(author_url)
+        papers = get_all_papers_info(author_url, max_papers_per_author)
     except:
         cprint(f'Scraping Error: {author_url} cannot be scraped', 'red')
         return
 
     put_papers_in_database(papers, papers_collection)
 
-    collaborators = [author_name for paper in papers for author_name in paper['author']]
-    collaborator_reputation = get_num_papers_of_collaborator(collaborators)
+    collaborators = set([author_name for paper in papers for author_name in paper['author']])
 
-    for collaborator_name, reputation in collaborator_reputation.items():
-        if collaborator_name not in visited_authors:
-            # reputation is negated to get the author with the most citations using a min-heap-based priority queue
-
-            heappush(author_queue,  (-reputation, collaborator_name))
+    for collaborator_name in collaborators:
+        if collaborator_name not in visited_authors and collaborator_name not in author_queue:
+            author_queue.append(collaborator_name)
 
     visited_authors.add(author_name)
+
     save_checkpoint(queue_filename, visited_filename, author_queue, visited_authors)
 
+
+
 if __name__ == '__main__':
-    MAX_AUTHORS_TO_SCRAPE = 5
+    MAX_AUTHORS_TO_SCRAPE = 10
+    MAX_PAPERS_PER_AUTHOR = 100
 
     data_path = 'data'
 
@@ -399,16 +405,27 @@ if __name__ == '__main__':
 
     queue_filename = 'author_queue.pickle'
     visited_filename = 'visited_authors.pickle'
+    # os.remove(queue_filename)
+    # os.remove(visited_filename)
+
     author_queue, visited_authors = load_checkpoint(queue_filename, visited_filename)
 
     if not len(author_queue):
         # seed_author_name = 'Michael I. Jordan'
         seed_author_name = 'Mikołaj Kasprzak'
+        # seed_author_name = 'David Yarowsky'
 
-        heappush(author_queue, (0, seed_author_name))
+        author_queue.append(seed_author_name)
         visited_authors.add(seed_author_name)
         save_checkpoint(queue_filename, visited_filename, author_queue, visited_authors)
 
+    i = 0
     while len(author_queue) and MAX_AUTHORS_TO_SCRAPE > 0:
-        scrape(author_queue, visited_authors)
+        
+        if i % 1 == 0:
+            collection_size = db.command('collstats', 'papers')['size']
+            cprint(f'Database size is {collection_size / (10 ** 6)}Mb', 'yellow')
+
+        scrape(author_queue, visited_authors, MAX_PAPERS_PER_AUTHOR)
         MAX_AUTHORS_TO_SCRAPE -= 1
+        i += 1

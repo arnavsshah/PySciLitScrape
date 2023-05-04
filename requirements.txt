@@ -7,3 +7,4 @@ pymongo
 termcolor
 ratelimiter
 bibtexparser
+pyvis

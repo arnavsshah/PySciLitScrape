@@ -8,3 +8,4 @@ termcolor
 ratelimiter
 bibtexparser
 pyvis
+flask

@@ -135,7 +135,7 @@ def download_source(paper_id: str):
         if r.status_code != 200:
             print(f"Status code for {source_url}: {r.status_code}")
 
-    file_name = f'data/{paper_id}.tar.gz'
+    file_name = f'../data/{paper_id}.tar.gz'
     f = open(file_name, 'wb')
     f.write(r.content)
     f.close()
@@ -143,7 +143,7 @@ def download_source(paper_id: str):
     try:
         # Extract file
         tar = tarfile.open(file_name, "r:gz")
-        tar.extractall(f'data/{paper_id}')
+        tar.extractall(f'../data/{paper_id}')
         tar.close()
     except:
         cprint(f'Tarfile: {paper_id} source cannot be downloaded/extracted', 'red')
@@ -159,14 +159,14 @@ def get_citations(paper_id: str) -> List[Dict[str, str]]:
     Note: We assume that paper data are located in the 'data/{paper_id}' directory.
     """
 
-    if not os.path.exists(f'data/{paper_id}'):
+    if not os.path.exists(f'../data/{paper_id}'):
         return {}
 
-    bib_file_names = [name for name in os.listdir(f'data/{paper_id}') if name[-4:] == '.bib']
+    bib_file_names = [name for name in os.listdir(f'../data/{paper_id}') if name[-4:] == '.bib']
 
     bib_entries = []
     for bib_file in bib_file_names:
-        file_path = f'data/{paper_id}/{bib_file}'
+        file_path = f'../data/{paper_id}/{bib_file}'
         with open(file_path) as f:
             try:
                 bib_entries += bibtexparser.load(f).entries
@@ -174,10 +174,10 @@ def get_citations(paper_id: str) -> List[Dict[str, str]]:
                 cprint(f'Parsing: Bib file {bib_file} contained in {paper_id} cannot be parsed', 'red')
                 continue
 
-    tex_file_names = [name for name in os.listdir(f'data/{paper_id}') if name[-4:] == '.tex']
+    tex_file_names = [name for name in os.listdir(f'../data/{paper_id}') if name[-4:] == '.tex']
     citations = []
     for file_name in tex_file_names:
-        file_path = f'data/{paper_id}/{file_name}'
+        file_path = f'../data/{paper_id}/{file_name}'
         with open(file_path) as f:
             try:
                 tex = f.read()
@@ -208,14 +208,14 @@ def get_sections_from_paper(paper_id: str) -> Dict[str, str]:
     :return: a dict from name to content.
     """
 
-    if not os.path.exists(f'data/{paper_id}'):
+    if not os.path.exists(f'../data/{paper_id}'):
         return {}
 
-    tex_file_names = [name for name in os.listdir(f'data/{paper_id}') if name[-4:] == '.tex']
+    tex_file_names = [name for name in os.listdir(f'../data/{paper_id}') if name[-4:] == '.tex']
 
     sections = dict()
     for file_name in tex_file_names:
-        file_path = f'data/{paper_id}/{file_name}'
+        file_path = f'../data/{paper_id}/{file_name}'
         with open(file_path) as f:
             try:
                 tex = f.readlines()
@@ -254,20 +254,20 @@ def get_paper_obj(paper: Dict) -> Dict:
     :return: A paper object consisting of id, title, authors, abstract, date, sections, citations
     """
 
-    paper_id = paper['id']
+    # paper_id = paper['id']
 
-    download_source(paper_id)
-    # sections = get_sections_from_paper(paper_id)
-    # paper['sections'] = sections
-    citations = get_citations(paper_id)
-    paper['citations'] = citations
+    # download_source(paper_id)
+    # # sections = get_sections_from_paper(paper_id)
+    # # paper['sections'] = sections
+    # citations = get_citations(paper_id)
+    # paper['citations'] = citations
 
-    paper_path = f'data/{paper_id}'
+    # paper_path = f'../data/{paper_id}'
 
-    try:
-        shutil.rmtree(paper_path)
-    except OSError as e:
-        print(f'Deletion Error: {paper_path} : {e.strerror}')
+    # try:
+    #     shutil.rmtree(paper_path)
+    # except OSError as e:
+    #     print(f'Deletion Error: {paper_path} : {e.strerror}')
         
     return paper
 
@@ -378,10 +378,10 @@ def scrape(author_queue: List[str], visited_authors: Set[str], max_papers_per_au
 
 
 if __name__ == '__main__':
-    MAX_AUTHORS_TO_SCRAPE = 10
-    MAX_PAPERS_PER_AUTHOR = 100
+    MAX_AUTHORS_TO_SCRAPE = 50
+    MAX_PAPERS_PER_AUTHOR = 30
 
-    data_path = 'data'
+    data_path = '../data'
 
     try:
         shutil.rmtree(data_path)
@@ -390,7 +390,7 @@ if __name__ == '__main__':
 
     Path(data_path).mkdir(parents=True, exist_ok=True)
 
-    rate_limiter = RateLimiter(max_calls=1, period=15)
+    rate_limiter = RateLimiter(max_calls=1, period=1)
     client = MongoClient()
     db = client['litdb']
 

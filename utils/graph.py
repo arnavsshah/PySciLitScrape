@@ -120,7 +120,10 @@ def get_authors_and_collaborators_within_degree(degree: int, seed_author_name: s
 def get_collaborator_graph(net: pyvis.network.Network, collection: pymongo.collection.Collection, 
                         degree: int, seed_author_name: str) -> None:
 
-    authors_set, collaborator_map = get_all_authors_and_collaborators(papers_collection)
+    authors_set, collaborator_map = get_all_authors_and_collaborators(collection)
+    
+    if seed_author_name not in authors_set:
+        return
 
     visited_authors, visited_collaborator_map = get_authors_and_collaborators_within_degree(degree, seed_author_name, authors_set, collaborator_map)
 
@@ -135,8 +138,6 @@ def get_collaborator_graph(net: pyvis.network.Network, collection: pymongo.colle
                 edge_exists.update([(author, collab), (collab, author)])  # undirected edge
 
 
-
-
 if __name__ == '__main__':
 
     client = MongoClient()
@@ -148,7 +149,8 @@ if __name__ == '__main__':
                 bgcolor="#222222", 
                 font_color="white",
                 select_menu=True,
-                filter_menu=True)
+                filter_menu=True,
+                cdn_resources='in_line')
 
     degree = 2
     seed_author_name = 'Mikołaj Kasprzak'
@@ -157,7 +159,6 @@ if __name__ == '__main__':
     get_collaborator_graph(net, papers_collection, degree, seed_author_name)
 
     # get_citation_graph(net, papers_collection, degree, seed_paper_name)
-
 
     # net.show_buttons(filter_=['physics'])
     net.toggle_physics(True)

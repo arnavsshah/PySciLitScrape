@@ -1,0 +1,747 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+                <link href="lib/tom-select/tom-select.css" rel="stylesheet">
+                <script src="lib/tom-select/tom-select.complete.min.js"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 750px;
+                 background-color: #222222;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 750px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+                <div id="select-menu" class="card-header">
+                    <div class="row no-gutters">
+                        <div class="col-10 pb-2">
+                            <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="selectNode([value]);"
+                            id="select-node"
+                            placeholder="Select node..."
+                            >
+                                <option selected>Select a Node by ID</option>
+                                
+                                    <option value="Tommi Jaakkola">Tommi Jaakkola</option>
+                                
+                                    <option value="Daniele E. Schiavazzi">Daniele E. Schiavazzi</option>
+                                
+                                    <option value="Alexandre Bouchard-Côté">Alexandre Bouchard-Côté</option>
+                                
+                                    <option value="Akash Kumar Dhaka">Akash Kumar Dhaka</option>
+                                
+                                    <option value="Filip Tronarp">Filip Tronarp</option>
+                                
+                                    <option value="Axel Gandy">Axel Gandy</option>
+                                
+                                    <option value="David R. Burt">David R. Burt</option>
+                                
+                                    <option value="Rachael Meager">Rachael Meager</option>
+                                
+                                    <option value="Mark Girolami">Mark Girolami</option>
+                                
+                                    <option value="Joshua Schraiber">Joshua Schraiber</option>
+                                
+                                    <option value="Alessandro Barp">Alessandro Barp</option>
+                                
+                                    <option value="Jon Cockayne">Jon Cockayne</option>
+                                
+                                    <option value="Fang Liu">Fang Liu</option>
+                                
+                                    <option value="Jeffrey Negrea">Jeffrey Negrea</option>
+                                
+                                    <option value="Peter Yatsyshin">Peter Yatsyshin</option>
+                                
+                                    <option value="Miguel Biron-Lattes">Miguel Biron-Lattes</option>
+                                
+                                    <option value="Jonathan How">Jonathan How</option>
+                                
+                                    <option value="Jason Yim">Jason Yim</option>
+                                
+                                    <option value="Miriam Shiffman">Miriam Shiffman</option>
+                                
+                                    <option value="Andrew Gelman">Andrew Gelman</option>
+                                
+                                    <option value="Simo Särkkä">Simo Särkkä</option>
+                                
+                                    <option value="Ryan P. Adams">Ryan P. Adams</option>
+                                
+                                    <option value="Harrison Zhu">Harrison Zhu</option>
+                                
+                                    <option value="Sebastian J. Vollmer">Sebastian J. Vollmer</option>
+                                
+                                    <option value="Chun Yui Wong">Chun Yui Wong</option>
+                                
+                                    <option value="Xiangnan He">Xiangnan He</option>
+                                
+                                    <option value="Yu Wang">Yu Wang</option>
+                                
+                                    <option value="Adam Ścibior">Adam Ścibior</option>
+                                
+                                    <option value="Chris. J. Oates">Chris. J. Oates</option>
+                                
+                                    <option value="Trevor Campbell">Trevor Campbell</option>
+                                
+                                    <option value="Anna L. Smith">Anna L. Smith</option>
+                                
+                                    <option value="Chris J. Oates">Chris J. Oates</option>
+                                
+                                    <option value="David B. Dunson">David B. Dunson</option>
+                                
+                                    <option value="Jeffrey W. Miller">Jeffrey W. Miller</option>
+                                
+                                    <option value="Soumya Ghosh">Soumya Ghosh</option>
+                                
+                                    <option value="Zachary Frangella">Zachary Frangella</option>
+                                
+                                    <option value="Veit Wild">Veit Wild</option>
+                                
+                                    <option value="Diana Cai">Diana Cai</option>
+                                
+                                    <option value="Cian Naik">Cian Naik</option>
+                                
+                                    <option value="Zeyu Sun">Zeyu Sun</option>
+                                
+                                    <option value="Stefano Favaro">Stefano Favaro</option>
+                                
+                                    <option value="Aki Vehtari">Aki Vehtari</option>
+                                
+                                    <option value="Bingyue Su">Bingyue Su</option>
+                                
+                                    <option value="Serafim Kalliadasis">Serafim Kalliadasis</option>
+                                
+                                    <option value="Saifuddin Syed">Saifuddin Syed</option>
+                                
+                                    <option value="Jean-François Ton">Jean-François Ton</option>
+                                
+                                    <option value="Kaushik Srinivasan">Kaushik Srinivasan</option>
+                                
+                                    <option value="Mikołaj Kasprzak">Mikołaj Kasprzak</option>
+                                
+                                    <option value="Aviv Regev">Aviv Regev</option>
+                                
+                                    <option value="Mark Yen">Mark Yen</option>
+                                
+                                    <option value="Brian L. Trippe">Brian L. Trippe</option>
+                                
+                                    <option value="Andrew M. Stuart">Andrew M. Stuart</option>
+                                
+                                    <option value="Naitong Chen">Naitong Chen</option>
+                                
+                                    <option value="Andrew Duncan">Andrew Duncan</option>
+                                
+                                    <option value="William T. Stephenson">William T. Stephenson</option>
+                                
+                                    <option value="Martin Ingram">Martin Ingram</option>
+                                
+                                    <option value="Xiang Wang">Xiang Wang</option>
+                                
+                                    <option value="George Thorne">George Thorne</option>
+                                
+                                    <option value="Michael Riis Andersen">Michael Riis Andersen</option>
+                                
+                                    <option value="Songbai Guo">Songbai Guo</option>
+                                
+                                    <option value="Xing Liu">Xing Liu</option>
+                                
+                                    <option value="Daniel M. Roy">Daniel M. Roy</option>
+                                
+                                    <option value="Leonard Hasenclever">Leonard Hasenclever</option>
+                                
+                                    <option value="Stanislav Nagy">Stanislav Nagy</option>
+                                
+                                    <option value="Matthew Niedoba">Matthew Niedoba</option>
+                                
+                                    <option value="Alejandro Catalina">Alejandro Catalina</option>
+                                
+                                    <option value="Zhiguo Zhang">Zhiguo Zhang</option>
+                                
+                                    <option value="Lester Mackey">Lester Mackey</option>
+                                
+                                    <option value="Tigran Nagapetyan">Tigran Nagapetyan</option>
+                                
+                                    <option value="Runjing Liu">Runjing Liu</option>
+                                
+                                    <option value="Marie-Therese Wolfram">Marie-Therese Wolfram</option>
+                                
+                                    <option value="Yunpeng Liu">Yunpeng Liu</option>
+                                
+                                    <option value="Judith Rousseau">Judith Rousseau</option>
+                                
+                                    <option value="Geoffrey Schiebinger">Geoffrey Schiebinger</option>
+                                
+                                    <option value="Jiawei Li">Jiawei Li</option>
+                                
+                                    <option value="Maoxing Liu">Maoxing Liu</option>
+                                
+                                    <option value="Zuheng Xu">Zuheng Xu</option>
+                                
+                                    <option value="Madeleine Udell">Madeleine Udell</option>
+                                
+                                    <option value="Hilary K. Finucane">Hilary K. Finucane</option>
+                                
+                                    <option value="Geir E. Dullerud">Geir E. Dullerud</option>
+                                
+                                    <option value="Doug Tischer">Doug Tischer</option>
+                                
+                                    <option value="Chuanqing Xu">Chuanqing Xu</option>
+                                
+                                    <option value="Jonathan Huggins">Jonathan Huggins</option>
+                                
+                                    <option value="Vittorio Romaniello">Vittorio Romaniello</option>
+                                
+                                    <option value="David Baker">David Baker</option>
+                                
+                                    <option value="Boyan Beronov">Boyan Beronov</option>
+                                
+                                    <option value="Brian Trippe">Brian Trippe</option>
+                                
+                                    <option value="Kevin H. Huang">Kevin H. Huang</option>
+                                
+                                    <option value="Regina Barzilay">Regina Barzilay</option>
+                                
+                                    <option value="Nikola Surjanovic">Nikola Surjanovic</option>
+                                
+                                    <option value="Geoffrey Parks">Geoffrey Parks</option>
+                                
+                                    <option value="Setareh Dabiri">Setareh Dabiri</option>
+                                
+                                    <option value="Ashley Scillitoe">Ashley Scillitoe</option>
+                                
+                                    <option value="François-Xavier Briol">François-Xavier Briol</option>
+                                
+                                    <option value="Raul Vazquez Diaz">Raul Vazquez Diaz</option>
+                                
+                                    <option value="Raj Agrawal">Raj Agrawal</option>
+                                
+                                    <option value="Simon L. Cotter">Simon L. Cotter</option>
+                                
+                                    <option value="Manushi Welandawe">Manushi Welandawe</option>
+                                
+                                    <option value="George Wynne">George Wynne</option>
+                                
+                                    <option value="Tamay Özgökmen">Tamay Özgökmen</option>
+                                
+                                    <option value="Haoyue Feng">Haoyue Feng</option>
+                                
+                                    <option value="Kedeng Cheng">Kedeng Cheng</option>
+                                
+                                    <option value="Francois-Xavier Briol">Francois-Xavier Briol</option>
+                                
+                                    <option value="Sanvesh Srivastava">Sanvesh Srivastava</option>
+                                
+                                    <option value="James Zou">James Zou</option>
+                                
+                                    <option value="An Zhang">An Zhang</option>
+                                
+                                    <option value="Frank Wood">Frank Wood</option>
+                                
+                                    <option value="Michael I. Jordan">Michael I. Jordan</option>
+                                
+                                    <option value="Lorenzo Masoero">Lorenzo Masoero</option>
+                                
+                                    <option value="Jonathan H. Huggins">Jonathan H. Huggins</option>
+                                
+                                    <option value="Enrico Crovini">Enrico Crovini</option>
+                                
+                                    <option value="Junfei Xia">Junfei Xia</option>
+                                
+                                    <option value="Yancheng Yuan">Yancheng Yuan</option>
+                                
+                                    <option value="Lukasz Szpruch">Lukasz Szpruch</option>
+                                
+                                    <option value="Ryan Giordano">Ryan Giordano</option>
+                                
+                                    <option value="Toni Karvonen">Toni Karvonen</option>
+                                
+                                    <option value="Berend Zwartsenberg">Berend Zwartsenberg</option>
+                                
+                                    <option value="Brian Kulis">Brian Kulis</option>
+                                
+                                    <option value="Sameer K. Deshpande">Sameer K. Deshpande</option>
+                                
+                                    <option value="Tat-Seng Chua">Tat-Seng Chua</option>
+                                
+                                    <option value="Konstantinos Zygalakis">Konstantinos Zygalakis</option>
+                                
+                                    <option value="Justice Sefas">Justice Sefas</option>
+                                
+                                    <option value="Steven Winter">Steven Winter</option>
+                                
+                                    <option value="Tin D. Nguyen">Tin D. Nguyen</option>
+                                
+                                    <option value="Pranay Seshadri">Pranay Seshadri</option>
+                                
+                                    <option value="Tamara Broderick">Tamara Broderick</option>
+                                
+                                    <option value="Peiyuan Zhu">Peiyuan Zhu</option>
+                                
+                                    <option value="Måns Magnusson">Måns Magnusson</option>
+                                
+                                    <option value="Andrew B. Duncan">Andrew B. Duncan</option>
+                                
+                                    <option value="Shijing Si">Shijing Si</option>
+                                
+                                    <option value="Jonathan Wilder Lavington">Jonathan Wilder Lavington</option>
+                                
+                                    <option value="Xiaojing Wang">Xiaojing Wang</option>
+                                
+                                    <option value="Jun Yang">Jun Yang</option>
+                                
+                                    <option value="Xinglong Li">Xinglong Li</option>
+                                
+                                    <option value="Tian Zheng">Tian Zheng</option>
+                                
+                                    <option value="Federico Camerlenghi">Federico Camerlenghi</option>
+                                
+                                    <option value="Lawrence Carin">Lawrence Carin</option>
+                                
+                                    <option value="Dogyoon Song">Dogyoon Song</option>
+                                
+                                    <option value="Vasileios Lioutas">Vasileios Lioutas</option>
+                                
+                                    <option value="Mikhail Yurochkin">Mikhail Yurochkin</option>
+                                
+                                    <option value="Alfred Hero">Alfred Hero</option>
+                                
+                                    <option value="Lizhen Lin">Lizhen Lin</option>
+                                
+                                    <option value="Renato Berlinghieri">Renato Berlinghieri</option>
+                                
+                                    <option value="Oliver R. A. Dunbar">Oliver R. A. Dunbar</option>
+                                
+                            </select>
+                        </div>
+                        <div class="col-2 pb-2">
+                            <button type="button" class="btn btn-primary btn-block" onclick="neighbourhoodHighlight({nodes: []});">Reset Selection</button>
+                        </div>
+                    </div>
+                </div>
+            
+            
+              <div id="filter-menu" class="card-header">
+                <div class="row no-gutters">
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'item')"
+                            id="select-item"
+                        >
+                        <option value="">Select a network item</option>
+                        <option value="edge">edge</option>
+                        <option value="node">node</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'property')"
+                            id="select-property"
+                        >
+                        <option value="">Select a property...</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            id="select-value"
+                        >
+                        <option value="">Select value(s)...</option>
+                    </select>
+                  </div>
+                  <div class="col-1 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="highlightFilter(filter);">Filter</button>
+                  </div>
+                  <div class="col-2 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="clearFilter(true)">Reset Selection</button>
+                  </div>
+                </div>
+              </div>
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+                  new TomSelect("#select-node",{
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      }
+                  });
+              
+
+              
+                  // explicitly using onItemAdd and this function as we need to save multiple values
+                  let updateValueFilter = function() {
+                      return function () {
+                      filter['value'].push(arguments[0])
+                      }
+                  }
+
+                  let valueControl = new TomSelect("#select-value",{
+                      maxItems: null,
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: updateValueFilter()
+                  });
+
+                  let addValues = function() {
+                      return function () {
+                          // clear the current value options and add the selected attribute values
+                          // tom-select handles duplicates
+                          let selectedProperty = arguments[0];
+                          valueControl.clear();
+                          valueControl.clearOptions();
+                          filter['value'] = []
+                          if (filter['item'] === 'node') {
+                              for (let each in allNodes) {
+                                  valueControl.addOption({
+                                      id:allNodes[each][selectedProperty],
+                                      title:allNodes[each][selectedProperty]
+                                  })
+                              }
+                          }
+                          else if (filter['item'] === 'edge') {
+                              for (let each in allEdges) {
+                                  valueControl.addOption({
+                                      id:allEdges[each][selectedProperty],
+                                      title:allEdges[each][selectedProperty]
+                                  })
+                              }
+                          }
+                      }
+                  };
+
+                  let propControl = new TomSelect("#select-property",{
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addValues()
+                  });
+
+                  let addProperties = function() {
+                      return function () {
+                          // loops through the selected network item and adds the attributes to dropdown
+                          // tom-select handles duplicates
+                          clearFilter(false)
+                          if (arguments[0] === 'edge') {
+                              for (let each in allEdges) {
+                                  if (allEdges.hasOwnProperty(each)) {
+                                      for (let eachProp in allEdges[each]) {
+                                          if (allEdges[each].hasOwnProperty(eachProp)) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                          else if (arguments[0] === 'node') {
+                              for (let each in allNodes) {
+                                  if (allNodes.hasOwnProperty(each)) {
+                                      for (let eachProp in allNodes[each]) {
+                                          if (allNodes[each].hasOwnProperty(eachProp)
+                                              && (eachProp !== 'hidden' && eachProp !== 'savedLabel'
+                                                  && eachProp !== 'hiddenLabel')) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  };
+
+                  let itemControl = new TomSelect("#select-item",{
+                      create: false,
+                      sortField:{
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addProperties()
+                  });
+
+                  function clearFilter(reset) {
+                      // utility function to clear all the selected filter options
+                      // if reset is set to true, the existing filter will be removed
+                      // else, only the dropdown options are cleared
+                      propControl.clear();
+                      propControl.clearOptions();
+                      valueControl.clear();
+                      valueControl.clearOptions();
+                      filter = {
+                          item : '',
+                          property : '',
+                          value : []
+                      }
+                      if (reset) {
+                          itemControl.clear();
+                          filterHighlight({nodes: []})
+                      }
+                  }
+
+                  function updateFilter(value, key) {
+                      // key could be 'item' or 'property' and value is as selected in dropdown
+                      filter[key] = value
+                  }
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#97c2fc", "font": {"color": "white"}, "id": "Tommi Jaakkola", "label": "Tommi Jaakkola", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Daniele E. Schiavazzi", "label": "Daniele E. Schiavazzi", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Alexandre Bouchard-C\u00f4t\u00e9", "label": "Alexandre Bouchard-C\u00f4t\u00e9", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Akash Kumar Dhaka", "label": "Akash Kumar Dhaka", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Filip Tronarp", "label": "Filip Tronarp", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Axel Gandy", "label": "Axel Gandy", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "David R. Burt", "label": "David R. Burt", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Rachael Meager", "label": "Rachael Meager", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Mark Girolami", "label": "Mark Girolami", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Joshua Schraiber", "label": "Joshua Schraiber", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Alessandro Barp", "label": "Alessandro Barp", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jon Cockayne", "label": "Jon Cockayne", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Fang Liu", "label": "Fang Liu", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jeffrey Negrea", "label": "Jeffrey Negrea", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Peter Yatsyshin", "label": "Peter Yatsyshin", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Miguel Biron-Lattes", "label": "Miguel Biron-Lattes", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jonathan How", "label": "Jonathan How", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jason Yim", "label": "Jason Yim", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Miriam Shiffman", "label": "Miriam Shiffman", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Andrew Gelman", "label": "Andrew Gelman", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Simo S\u00e4rkk\u00e4", "label": "Simo S\u00e4rkk\u00e4", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Ryan P. Adams", "label": "Ryan P. Adams", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Harrison Zhu", "label": "Harrison Zhu", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Sebastian J. Vollmer", "label": "Sebastian J. Vollmer", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Chun Yui Wong", "label": "Chun Yui Wong", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Xiangnan He", "label": "Xiangnan He", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Yu Wang", "label": "Yu Wang", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Adam \u015acibior", "label": "Adam \u015acibior", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Chris. J. Oates", "label": "Chris. J. Oates", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Trevor Campbell", "label": "Trevor Campbell", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Anna L. Smith", "label": "Anna L. Smith", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Chris J. Oates", "label": "Chris J. Oates", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "David B. Dunson", "label": "David B. Dunson", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jeffrey W. Miller", "label": "Jeffrey W. Miller", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Soumya Ghosh", "label": "Soumya Ghosh", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Zachary Frangella", "label": "Zachary Frangella", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Veit Wild", "label": "Veit Wild", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Diana Cai", "label": "Diana Cai", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Cian Naik", "label": "Cian Naik", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Zeyu Sun", "label": "Zeyu Sun", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Stefano Favaro", "label": "Stefano Favaro", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Aki Vehtari", "label": "Aki Vehtari", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Bingyue Su", "label": "Bingyue Su", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Serafim Kalliadasis", "label": "Serafim Kalliadasis", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Saifuddin Syed", "label": "Saifuddin Syed", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jean-Fran\u00e7ois Ton", "label": "Jean-Fran\u00e7ois Ton", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Kaushik Srinivasan", "label": "Kaushik Srinivasan", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Miko\u0142aj Kasprzak", "label": "Miko\u0142aj Kasprzak", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Aviv Regev", "label": "Aviv Regev", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Mark Yen", "label": "Mark Yen", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Brian L. Trippe", "label": "Brian L. Trippe", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Andrew M. Stuart", "label": "Andrew M. Stuart", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Naitong Chen", "label": "Naitong Chen", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Andrew Duncan", "label": "Andrew Duncan", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "William T. Stephenson", "label": "William T. Stephenson", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Martin Ingram", "label": "Martin Ingram", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Xiang Wang", "label": "Xiang Wang", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "George Thorne", "label": "George Thorne", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Michael Riis Andersen", "label": "Michael Riis Andersen", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Songbai Guo", "label": "Songbai Guo", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Xing Liu", "label": "Xing Liu", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Daniel M. Roy", "label": "Daniel M. Roy", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Leonard Hasenclever", "label": "Leonard Hasenclever", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Stanislav Nagy", "label": "Stanislav Nagy", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Matthew Niedoba", "label": "Matthew Niedoba", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Alejandro Catalina", "label": "Alejandro Catalina", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Zhiguo Zhang", "label": "Zhiguo Zhang", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Lester Mackey", "label": "Lester Mackey", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Tigran Nagapetyan", "label": "Tigran Nagapetyan", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Runjing Liu", "label": "Runjing Liu", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Marie-Therese Wolfram", "label": "Marie-Therese Wolfram", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Yunpeng Liu", "label": "Yunpeng Liu", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Judith Rousseau", "label": "Judith Rousseau", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Geoffrey Schiebinger", "label": "Geoffrey Schiebinger", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jiawei Li", "label": "Jiawei Li", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Maoxing Liu", "label": "Maoxing Liu", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Zuheng Xu", "label": "Zuheng Xu", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Madeleine Udell", "label": "Madeleine Udell", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Hilary K. Finucane", "label": "Hilary K. Finucane", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Geir E. Dullerud", "label": "Geir E. Dullerud", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Doug Tischer", "label": "Doug Tischer", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Chuanqing Xu", "label": "Chuanqing Xu", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jonathan Huggins", "label": "Jonathan Huggins", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Vittorio Romaniello", "label": "Vittorio Romaniello", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "David Baker", "label": "David Baker", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Boyan Beronov", "label": "Boyan Beronov", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Brian Trippe", "label": "Brian Trippe", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Kevin H. Huang", "label": "Kevin H. Huang", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Regina Barzilay", "label": "Regina Barzilay", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Nikola Surjanovic", "label": "Nikola Surjanovic", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Geoffrey Parks", "label": "Geoffrey Parks", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Setareh Dabiri", "label": "Setareh Dabiri", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Ashley Scillitoe", "label": "Ashley Scillitoe", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Fran\u00e7ois-Xavier Briol", "label": "Fran\u00e7ois-Xavier Briol", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Raul Vazquez Diaz", "label": "Raul Vazquez Diaz", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Raj Agrawal", "label": "Raj Agrawal", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Simon L. Cotter", "label": "Simon L. Cotter", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Manushi Welandawe", "label": "Manushi Welandawe", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "George Wynne", "label": "George Wynne", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Tamay \u00d6zg\u00f6kmen", "label": "Tamay \u00d6zg\u00f6kmen", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Haoyue Feng", "label": "Haoyue Feng", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Kedeng Cheng", "label": "Kedeng Cheng", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Francois-Xavier Briol", "label": "Francois-Xavier Briol", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Sanvesh Srivastava", "label": "Sanvesh Srivastava", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "James Zou", "label": "James Zou", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "An Zhang", "label": "An Zhang", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Frank Wood", "label": "Frank Wood", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Michael I. Jordan", "label": "Michael I. Jordan", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Lorenzo Masoero", "label": "Lorenzo Masoero", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jonathan H. Huggins", "label": "Jonathan H. Huggins", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Enrico Crovini", "label": "Enrico Crovini", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Junfei Xia", "label": "Junfei Xia", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Yancheng Yuan", "label": "Yancheng Yuan", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Lukasz Szpruch", "label": "Lukasz Szpruch", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Ryan Giordano", "label": "Ryan Giordano", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Toni Karvonen", "label": "Toni Karvonen", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Berend Zwartsenberg", "label": "Berend Zwartsenberg", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Brian Kulis", "label": "Brian Kulis", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Sameer K. Deshpande", "label": "Sameer K. Deshpande", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Tat-Seng Chua", "label": "Tat-Seng Chua", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Konstantinos Zygalakis", "label": "Konstantinos Zygalakis", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Justice Sefas", "label": "Justice Sefas", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Steven Winter", "label": "Steven Winter", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Tin D. Nguyen", "label": "Tin D. Nguyen", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Pranay Seshadri", "label": "Pranay Seshadri", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Tamara Broderick", "label": "Tamara Broderick", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Peiyuan Zhu", "label": "Peiyuan Zhu", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "M\u00e5ns Magnusson", "label": "M\u00e5ns Magnusson", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Andrew B. Duncan", "label": "Andrew B. Duncan", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Shijing Si", "label": "Shijing Si", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jonathan Wilder Lavington", "label": "Jonathan Wilder Lavington", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Xiaojing Wang", "label": "Xiaojing Wang", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jun Yang", "label": "Jun Yang", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Xinglong Li", "label": "Xinglong Li", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Tian Zheng", "label": "Tian Zheng", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Federico Camerlenghi", "label": "Federico Camerlenghi", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Lawrence Carin", "label": "Lawrence Carin", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Dogyoon Song", "label": "Dogyoon Song", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Vasileios Lioutas", "label": "Vasileios Lioutas", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Mikhail Yurochkin", "label": "Mikhail Yurochkin", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Alfred Hero", "label": "Alfred Hero", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Lizhen Lin", "label": "Lizhen Lin", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Renato Berlinghieri", "label": "Renato Berlinghieri", "shape": "dot"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Oliver R. A. Dunbar", "label": "Oliver R. A. Dunbar", "shape": "dot"}]);
+                  edges = new vis.DataSet([{"from": "Miko\u0142aj Kasprzak", "to": "Yu Wang"}, {"from": "Miko\u0142aj Kasprzak", "to": "Jonathan H. Huggins"}, {"from": "Miko\u0142aj Kasprzak", "to": "George Wynne"}, {"from": "Miko\u0142aj Kasprzak", "to": "Andrew B. Duncan"}, {"from": "Miko\u0142aj Kasprzak", "to": "Trevor Campbell"}, {"from": "Miko\u0142aj Kasprzak", "to": "Tamara Broderick"}, {"from": "Yu Wang", "to": "Jonathan H. Huggins"}, {"from": "Yu Wang", "to": "Chuanqing Xu"}, {"from": "Yu Wang", "to": "Kedeng Cheng"}, {"from": "Yu Wang", "to": "Songbai Guo"}, {"from": "Yu Wang", "to": "Maoxing Liu"}, {"from": "Yu Wang", "to": "Xiaojing Wang"}, {"from": "Yu Wang", "to": "Zhiguo Zhang"}, {"from": "Yu Wang", "to": "Bingyue Su"}, {"from": "Yu Wang", "to": "Daniele E. Schiavazzi"}, {"from": "Yu Wang", "to": "Fang Liu"}, {"from": "Yu Wang", "to": "Mark Yen"}, {"from": "Yu Wang", "to": "Geir E. Dullerud"}, {"from": "Yu Wang", "to": "Zeyu Sun"}, {"from": "Yu Wang", "to": "Dogyoon Song"}, {"from": "Yu Wang", "to": "Alfred Hero"}, {"from": "Yu Wang", "to": "An Zhang"}, {"from": "Yu Wang", "to": "Xiang Wang"}, {"from": "Yu Wang", "to": "Yancheng Yuan"}, {"from": "Yu Wang", "to": "Xiangnan He"}, {"from": "Yu Wang", "to": "Tat-Seng Chua"}, {"from": "Jonathan H. Huggins", "to": "Trevor Campbell"}, {"from": "Jonathan H. Huggins", "to": "Tamara Broderick"}, {"from": "Jonathan H. Huggins", "to": "Jeffrey Negrea"}, {"from": "Jonathan H. Huggins", "to": "Jun Yang"}, {"from": "Jonathan H. Huggins", "to": "Haoyue Feng"}, {"from": "Jonathan H. Huggins", "to": "Daniel M. Roy"}, {"from": "Jonathan H. Huggins", "to": "Manushi Welandawe"}, {"from": "Jonathan H. Huggins", "to": "Michael Riis Andersen"}, {"from": "Jonathan H. Huggins", "to": "Aki Vehtari"}, {"from": "Jonathan H. Huggins", "to": "Jiawei Li"}, {"from": "Jonathan H. Huggins", "to": "Akash Kumar Dhaka"}, {"from": "Jonathan H. Huggins", "to": "Alejandro Catalina"}, {"from": "Jonathan H. Huggins", "to": "M\u00e5ns Magnusson"}, {"from": "Jonathan H. Huggins", "to": "Jeffrey W. Miller"}, {"from": "Jonathan H. Huggins", "to": "Brian L. Trippe"}, {"from": "Jonathan H. Huggins", "to": "Raj Agrawal"}, {"from": "Jonathan H. Huggins", "to": "Brian Trippe"}, {"from": "Jonathan H. Huggins", "to": "Lester Mackey"}, {"from": "Jonathan H. Huggins", "to": "Ryan P. Adams"}, {"from": "Jonathan H. Huggins", "to": "James Zou"}, {"from": "George Wynne", "to": "Andrew B. Duncan"}, {"from": "George Wynne", "to": "Xing Liu"}, {"from": "George Wynne", "to": "Harrison Zhu"}, {"from": "George Wynne", "to": "Jean-Fran\u00e7ois Ton"}, {"from": "George Wynne", "to": "Andrew Duncan"}, {"from": "George Wynne", "to": "Veit Wild"}, {"from": "George Wynne", "to": "Stanislav Nagy"}, {"from": "George Wynne", "to": "Toni Karvonen"}, {"from": "George Wynne", "to": "Filip Tronarp"}, {"from": "George Wynne", "to": "Chris J. Oates"}, {"from": "George Wynne", "to": "Simo S\u00e4rkk\u00e4"}, {"from": "George Wynne", "to": "Fran\u00e7ois-Xavier Briol"}, {"from": "George Wynne", "to": "Mark Girolami"}, {"from": "Andrew B. Duncan", "to": "Xing Liu"}, {"from": "Andrew B. Duncan", "to": "Axel Gandy"}, {"from": "Andrew B. Duncan", "to": "Kevin H. Huang"}, {"from": "Andrew B. Duncan", "to": "Enrico Crovini"}, {"from": "Andrew B. Duncan", "to": "Simon L. Cotter"}, {"from": "Andrew B. Duncan", "to": "Konstantinos Zygalakis"}, {"from": "Andrew B. Duncan", "to": "Pranay Seshadri"}, {"from": "Andrew B. Duncan", "to": "George Thorne"}, {"from": "Andrew B. Duncan", "to": "Raul Vazquez Diaz"}, {"from": "Andrew B. Duncan", "to": "Oliver R. A. Dunbar"}, {"from": "Andrew B. Duncan", "to": "Andrew M. Stuart"}, {"from": "Andrew B. Duncan", "to": "Marie-Therese Wolfram"}, {"from": "Andrew B. Duncan", "to": "Chun Yui Wong"}, {"from": "Andrew B. Duncan", "to": "Ashley Scillitoe"}, {"from": "Andrew B. Duncan", "to": "Geoffrey Parks"}, {"from": "Andrew B. Duncan", "to": "Peter Yatsyshin"}, {"from": "Andrew B. Duncan", "to": "Serafim Kalliadasis"}, {"from": "Andrew B. Duncan", "to": "Jon Cockayne"}, {"from": "Andrew B. Duncan", "to": "Shijing Si"}, {"from": "Andrew B. Duncan", "to": "Chris. J. Oates"}, {"from": "Andrew B. Duncan", "to": "Lawrence Carin"}, {"from": "Andrew B. Duncan", "to": "Fran\u00e7ois-Xavier Briol"}, {"from": "Andrew B. Duncan", "to": "Alessandro Barp"}, {"from": "Andrew B. Duncan", "to": "Francois-Xavier Briol"}, {"from": "Andrew B. Duncan", "to": "Mark Girolami"}, {"from": "Andrew B. Duncan", "to": "Lester Mackey"}, {"from": "Andrew B. Duncan", "to": "Tigran Nagapetyan"}, {"from": "Andrew B. Duncan", "to": "Leonard Hasenclever"}, {"from": "Andrew B. Duncan", "to": "Sebastian J. Vollmer"}, {"from": "Andrew B. Duncan", "to": "Lukasz Szpruch"}, {"from": "Trevor Campbell", "to": "Tamara Broderick"}, {"from": "Trevor Campbell", "to": "Raj Agrawal"}, {"from": "Trevor Campbell", "to": "Diana Cai"}, {"from": "Trevor Campbell", "to": "Miriam Shiffman"}, {"from": "Trevor Campbell", "to": "William T. Stephenson"}, {"from": "Trevor Campbell", "to": "Geoffrey Schiebinger"}, {"from": "Trevor Campbell", "to": "Jonathan Huggins"}, {"from": "Trevor Campbell", "to": "Aviv Regev"}, {"from": "Trevor Campbell", "to": "Steven Winter"}, {"from": "Trevor Campbell", "to": "Lizhen Lin"}, {"from": "Trevor Campbell", "to": "Sanvesh Srivastava"}, {"from": "Trevor Campbell", "to": "David B. Dunson"}, {"from": "Trevor Campbell", "to": "Berend Zwartsenberg"}, {"from": "Trevor Campbell", "to": "Adam \u015acibior"}, {"from": "Trevor Campbell", "to": "Matthew Niedoba"}, {"from": "Trevor Campbell", "to": "Vasileios Lioutas"}, {"from": "Trevor Campbell", "to": "Yunpeng Liu"}, {"from": "Trevor Campbell", "to": "Justice Sefas"}, {"from": "Trevor Campbell", "to": "Setareh Dabiri"}, {"from": "Trevor Campbell", "to": "Jonathan Wilder Lavington"}, {"from": "Trevor Campbell", "to": "Frank Wood"}, {"from": "Trevor Campbell", "to": "Nikola Surjanovic"}, {"from": "Trevor Campbell", "to": "Saifuddin Syed"}, {"from": "Trevor Campbell", "to": "Alexandre Bouchard-C\u00f4t\u00e9"}, {"from": "Trevor Campbell", "to": "Zuheng Xu"}, {"from": "Trevor Campbell", "to": "Naitong Chen"}, {"from": "Trevor Campbell", "to": "Cian Naik"}, {"from": "Trevor Campbell", "to": "Judith Rousseau"}, {"from": "Trevor Campbell", "to": "Miguel Biron-Lattes"}, {"from": "Trevor Campbell", "to": "Vittorio Romaniello"}, {"from": "Trevor Campbell", "to": "Peiyuan Zhu"}, {"from": "Trevor Campbell", "to": "Boyan Beronov"}, {"from": "Trevor Campbell", "to": "Xinglong Li"}, {"from": "Trevor Campbell", "to": "Brian Kulis"}, {"from": "Trevor Campbell", "to": "Jonathan How"}, {"from": "Tamara Broderick", "to": "Brian L. Trippe"}, {"from": "Tamara Broderick", "to": "Raj Agrawal"}, {"from": "Tamara Broderick", "to": "Brian Trippe"}, {"from": "Tamara Broderick", "to": "Ryan P. Adams"}, {"from": "Tamara Broderick", "to": "Ryan Giordano"}, {"from": "Tamara Broderick", "to": "Martin Ingram"}, {"from": "Tamara Broderick", "to": "Runjing Liu"}, {"from": "Tamara Broderick", "to": "Michael I. Jordan"}, {"from": "Tamara Broderick", "to": "Renato Berlinghieri"}, {"from": "Tamara Broderick", "to": "David R. Burt"}, {"from": "Tamara Broderick", "to": "Kaushik Srinivasan"}, {"from": "Tamara Broderick", "to": "Tamay \u00d6zg\u00f6kmen"}, {"from": "Tamara Broderick", "to": "Junfei Xia"}, {"from": "Tamara Broderick", "to": "Sameer K. Deshpande"}, {"from": "Tamara Broderick", "to": "Soumya Ghosh"}, {"from": "Tamara Broderick", "to": "Tin D. Nguyen"}, {"from": "Tamara Broderick", "to": "Jason Yim"}, {"from": "Tamara Broderick", "to": "Doug Tischer"}, {"from": "Tamara Broderick", "to": "David Baker"}, {"from": "Tamara Broderick", "to": "Regina Barzilay"}, {"from": "Tamara Broderick", "to": "Tommi Jaakkola"}, {"from": "Tamara Broderick", "to": "Andrew Gelman"}, {"from": "Tamara Broderick", "to": "Rachael Meager"}, {"from": "Tamara Broderick", "to": "Anna L. Smith"}, {"from": "Tamara Broderick", "to": "Tian Zheng"}, {"from": "Tamara Broderick", "to": "Lorenzo Masoero"}, {"from": "Tamara Broderick", "to": "Joshua Schraiber"}, {"from": "Tamara Broderick", "to": "William T. Stephenson"}, {"from": "Tamara Broderick", "to": "Zachary Frangella"}, {"from": "Tamara Broderick", "to": "Madeleine Udell"}, {"from": "Tamara Broderick", "to": "Hilary K. Finucane"}, {"from": "Tamara Broderick", "to": "Federico Camerlenghi"}, {"from": "Tamara Broderick", "to": "Stefano Favaro"}, {"from": "Tamara Broderick", "to": "Mikhail Yurochkin"}, {"from": "Tamara Broderick", "to": "Jonathan Huggins"}, {"from": "Tamara Broderick", "to": "Lester Mackey"}, {"from": "Tamara Broderick", "to": "Diana Cai"}, {"from": "Tamara Broderick", "to": "Miriam Shiffman"}, {"from": "Tamara Broderick", "to": "Geoffrey Schiebinger"}, {"from": "Tamara Broderick", "to": "Aviv Regev"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "repulsion": {
+            "centralGravity": 0.2,
+            "damping": 0.09,
+            "nodeDistance": 500,
+            "springConstant": 0.05,
+            "springLength": 500
+        },
+        "solver": "repulsion",
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+                    network.on("selectNode", neighbourhoodHighlight);
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

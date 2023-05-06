@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PySciLitScrape</title>
+
+    <style>
+        body {
+            background: linear-gradient(180deg, #ABD8F1 0%, rgba(234, 233, 233, 0.63) 100%);
+            font-family: "Comic Sans MS", "Comic Sans", cursive;
+        }
+
+        h1 {
+            color: #17585c;
+            text-align: center;
+        }
+
+        .search-form {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px;
+        }
+
+        .search-bar {
+            width: 300px;
+            height: 20px;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .question {
+            width: 300px;
+            height: 20px;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .counter {
+            width: 50px;
+            height: 20px;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        .submit-button {
+            width: 80px;
+            height: 40px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #0d6efd;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+
+
+        .answer {
+            width: 60%;
+            font-size: 20px;
+            display: block;
+            margin: 20px auto;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        iframe {
+            width: 90%;
+            height: 720px;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            display: block;
+            margin: 10px auto;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1>Learn more about the authors!</h1>
+
+    <form class="search-form" method="POST" action="/">
+        <input type="text" value="{{seed_author_name}}" name="seed-author-name" class="search-bar" autocomplete="off"
+            required>
+        <input type="number" class="counter" name="degree" min="1" max="4" value="{{degree}}" required>
+
+        <input type="text" placeholder="Ask me a question about the author" name="question" class="question"
+            autocomplete="off">
+        <input type="submit" value="Submit" class="submit-button">
+
+
+    </form>
+
+    {% if answer != '' %}
+    <div class="answer">{{question}}<br><br>{{answer}}</div>
+    {% endif %}
+
+    <iframe src="/graph?seed_author_name={{seed_author_name}}&degree={{degree}}"></iframe>
+
+</body>
+
+</html>

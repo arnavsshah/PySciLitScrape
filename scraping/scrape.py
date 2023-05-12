@@ -86,7 +86,7 @@ def get_all_papers_info(author_page: str, max_papers: int) -> List[Dict]:
 
             # Get dates:
             paper_dates_on_page = html.select('.is-size-7')
-            date_re = r'Submitted (?:0[1-9]|[12][0-9]|3[01])\s(?:January|February|March|April|May|June|July|August|September|October|November|December),\s(?:[12]\d{3})'
+            date_re = r'Submitted (?:[1-9]|[12][0-9]|3[01])\s(?:January|February|March|April|May|June|July|August|September|October|November|December),\s(?:[12]\d{3})'
             paper_dates_on_page = [s for s in paper_dates_on_page if re.match(date_re, s.text)]
             paper_dates_on_page = [p.text[10:].split(';')[0] for p in paper_dates_on_page]
             paper_dates_on_page = [datetime.strptime(p, "%d %B, %Y") for p in paper_dates_on_page]
@@ -352,6 +352,10 @@ def scrape(author_queue: List[str], visited_authors: Set[str], max_papers_per_au
         if author_name not in visited_authors:
             break
 
+    if isinstance(author_name, tuple) :
+        author_name = author_name[1]
+
+
     # replace spaces with %20 for url
     author_url = 'https://arxiv.org/search/stat?searchtype=author&abstracts=show&query=' + '%20'.join(author_name.split(' '))
 
@@ -376,7 +380,7 @@ def scrape(author_queue: List[str], visited_authors: Set[str], max_papers_per_au
     save_checkpoint(queue_filename, visited_filename, author_queue, visited_authors)
 
 
-
+rate_limiter = RateLimiter(max_calls=1, period=15)
 if __name__ == '__main__':
     MAX_AUTHORS_TO_SCRAPE = 50
     MAX_PAPERS_PER_AUTHOR = 30
@@ -390,7 +394,6 @@ if __name__ == '__main__':
 
     Path(data_path).mkdir(parents=True, exist_ok=True)
 
-    rate_limiter = RateLimiter(max_calls=1, period=1)
     client = MongoClient()
     db = client['litdb']
 

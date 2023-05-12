@@ -99,15 +99,13 @@
             required>
         <input type="number" class="counter" name="degree" min="1" max="4" value="{{degree}}" required>
 
-        <input type="text" placeholder="Ask me a question about the author" name="question" class="question"
-            autocomplete="off">
         <input type="submit" value="Submit" class="submit-button">
 
 
     </form>
 
     {% if answer != '' %}
-    <div class="answer">{{question}}<br><br>{{answer}}</div>
+    <div class="answer">{{answer}}</div>
     {% endif %}
 
     <iframe src="/graph?seed_author_name={{seed_author_name}}&degree={{degree}}"></iframe>

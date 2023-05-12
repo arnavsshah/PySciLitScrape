@@ -1,11 +1,17 @@
 from flask import Flask, render_template, request
 
 from pymongo import MongoClient
+import generate
+import scraping
+import openai
+import os
 
 import pyvis
 from pyvis.network import Network
 
 from utils.graph import get_collaborator_graph
+
+openai.api_key = os.environ['OPENAI_API_KEY']
 
 
 app = Flask(__name__)
@@ -15,15 +21,15 @@ app = Flask(__name__)
 def index():
     seed_author_name = request.form.get('seed-author-name', 'Author Name')
     degree = request.form.get('degree', 1)
-    question = request.form.get('question')
 
-    if question == None or question == '':
-        answer = ''
+    name = "+".join(seed_author_name.split(' '))
+    url = f'https://arxiv.org/search/?query={name}&searchtype=all&source=header'
+    information = scraping.scrape.get_all_papers_info(url, 200)
+    summary = generate.generate_summary(information, model='gpt4')
 
-    else:
-        answer = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+    bio = generate.generate_author_bio(information, summary, author_name=seed_author_name, model='gpt4')
 
-    return render_template('index.html', seed_author_name=seed_author_name, degree=degree, question=question, answer=answer)
+    return render_template('index.html', seed_author_name=seed_author_name, degree=degree, answer=bio)
 
 
 @app.route('/graph', methods=['GET'])

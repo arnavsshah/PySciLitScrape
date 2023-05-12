@@ -1,4 +1,3 @@
-import scrape
 import os
 import openai
 
@@ -142,21 +141,4 @@ def Large_LLM(prompt, model='text-davinci-003', max_tokens=500):
             temperature=0.6,
         )
         return response.choices[0].message.content
-
-
-# print(Large_LLM(prompt, model='gpt4', max_tokens=3500))
-
-# todo: remove all
-author_name = 'Karthik Narasimhan'
-url = 'https://arxiv.org/search/cs?query=Karthik+Narasimhan&searchtype=author&size=200'
-information = scrape.get_all_papers_info(url, 200)
-summary = generate_summary(information, model='gpt4')
-#
-# print('SUMMARY')
-# print(summary)
-# bio = generate_author_bio(information, summary, author_name=author_name, model='gpt4')
-#
-# print('BIO')
-# print(bio)
-#
 
